@@ -31,5 +31,9 @@ class Vault:
             last_updated = self.VAULT_J['meta']['last_updated']
         )
         self.taskManager = TaskManager(self.VAULT_J["data"])
+
+    def createNewVault(self):
+        pass
+
     def Save(self):
         pass

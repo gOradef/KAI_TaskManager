@@ -2,5 +2,5 @@
 
 if __name__ == '__main__':
     setup()
-    init()
-    dump()
+    app: App = init()
+    app.dump()

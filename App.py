@@ -1,14 +1,17 @@
 ﻿import argparse
 from Vault import *
 from TaskManager import TaskManager
-
+from interface import Interface
 
 class App:
     Vault: Vault
     taskManager: TaskManager
+    interface: Interface
+
     def __init__(self):
         self.Vault = Vault()
         self.taskManager = self.Vault.taskManager
+        self.Interface = Interface()
 
     def dump(self):
         Vault.Save()
@@ -26,8 +29,10 @@ def setup():
         print(f'Using default location for vault: {Vault.VAULT_PATH}')
 
 
+# Returns object of App
 def init():
     app = App()
+    return app
 
 def dump():
     pass
