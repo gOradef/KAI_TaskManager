@@ -2,13 +2,14 @@
 import uuid
 from enum import Enum
 
-class Status(Enum):
-    TODO = 0
-    IN_PROGRESS = 1
-    COMPLETE = 2
-    ARCHIVED = 3
 
 class Task:
+    class Status(Enum):
+        TODO = 0
+        IN_PROGRESS = 1
+        COMPLETE = 2
+        ARCHIVED = 3
+
     id: uuid.UUID
     discipline: str
     name: str
@@ -19,7 +20,7 @@ class Task:
         self.id = uuid.uuid4()
         self.discipline = discipline
         self.name = name
-        self.status = Status.TODO
+        self.status = self.Status.TODO
 
 class TaskManager:
     disciplines: list[str]

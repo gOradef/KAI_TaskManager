@@ -1,7 +1,4 @@
-import datetime
 from dataclasses import dataclass
-from doctest import debug
-from io import TextIOWrapper
 from pathlib import Path
 
 from TaskManager import TaskManager
@@ -35,5 +32,5 @@ class Vault:
     def createNewVault(self):
         pass
 
-    def Save(self):
-        pass
+    def save(self):
+        print(self)

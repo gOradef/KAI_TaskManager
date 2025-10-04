@@ -1,20 +1,23 @@
 ﻿import argparse
 from Vault import *
 from TaskManager import TaskManager
-from interface import Interface
+from Interface import TextualApp
+
 
 class App:
     Vault: Vault
     taskManager: TaskManager
-    interface: Interface
+    interface: TextualApp
 
     def __init__(self):
         self.Vault = Vault()
-        self.taskManager = self.Vault.taskManager
-        self.Interface = Interface()
+        self.taskManager = self.Vault.taskManager #todo is it nescecary?
+        self.interface = TextualApp(self.Vault.taskManager)
 
+    def run(self):
+        self.interface.start()
     def dump(self):
-        Vault.Save()
+        Vault.save()
 
 def setup():
     parser = argparse.ArgumentParser(description="App for tracking your tasks :)")
@@ -29,10 +32,11 @@ def setup():
         print(f'Using default location for vault: {Vault.VAULT_PATH}')
 
 
-# Returns object of App
+
 def init():
     app = App()
+    app.run()
     return app
 
-def dump():
-    pass
+def dump(app: App):
+    app.dump()

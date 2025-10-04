@@ -1,6 +1,6 @@
-﻿from App import setup, init, dump
+﻿from App import App, setup, init, dump
 
 if __name__ == '__main__':
     setup()
     app: App = init()
-    app.dump()
+    # dump(app)
