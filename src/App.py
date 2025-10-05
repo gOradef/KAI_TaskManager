@@ -6,18 +6,18 @@ from Interface import TextualApp
 
 class App:
     Vault: Vault
-    taskManager: TaskManager
     interface: TextualApp
 
     def __init__(self):
         self.Vault = Vault()
-        self.taskManager = self.Vault.taskManager #todo is it nescecary?
-        self.interface = TextualApp(self.Vault.taskManager)
+        self.interface = TextualApp(self.Vault)
 
     def run(self):
         self.interface.start()
+
     def dump(self):
-        Vault.save()
+        self.Vault.save()
+
 
 def setup():
     parser = argparse.ArgumentParser(description="App for tracking your tasks :)")
@@ -32,11 +32,11 @@ def setup():
         print(f'Using default location for vault: {Vault.VAULT_PATH}')
 
 
-
 def init():
     app = App()
     app.run()
     return app
+
 
 def dump(app: App):
     app.dump()
