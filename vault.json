@@ -1,0 +1,29 @@
+{
+  "meta": {
+    "name": "KAI",
+    "version": "0.1",
+    "last_updated": "2025-10-08T20:02:38.107029"
+  },
+  "data": {
+    "disciplines": [
+      {
+        "id": "id1",
+        "name": "name1"
+      },
+      {
+        "id": "id2",
+        "name": "name2"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "id1",
+        "name": "name1"
+      },
+      {
+        "id": "id2",
+        "name": "name2"
+      }
+    ]
+  }
+}

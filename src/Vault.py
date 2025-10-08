@@ -4,11 +4,9 @@ from datetime import datetime
 import json
 
 from TaskManager import TaskManager
-
+from Config import Config
 
 class Vault:
-    VAULT_PATH = './vault.json'
-
     @dataclass
     class MetaData:
         name: str
@@ -19,10 +17,10 @@ class Vault:
     meta: MetaData
 
     def __init__(self):
-        if not Path(self.VAULT_PATH).is_file():
+        if not Path(Config.VAULT_PATH).is_file():
             self.createNewVault()
 
-        with open(self.VAULT_PATH, 'r', encoding='utf-8-sig') as file:
+        with open(Config.VAULT_PATH, 'r', encoding='utf-8') as file:
             self.VAULT_J = json.load(file)
 
         self.meta = self.MetaData(
@@ -40,11 +38,20 @@ class Vault:
                 "last_updated": datetime.now().isoformat()
             },
             "data": {
-                "disciplines": ["Math", "Physics", "Programming"],
+                "disciplines": [
+                      {
+                        "id": "id1",
+                        "name": "name1"
+                      },
+                      {
+                        "id":  "id2",
+                        "name": "name2"
+                      }
+                    ],
                 "tasks": []
             }
         }
-        with open(self.VAULT_PATH, 'w') as f:
+        with open(Config.VAULT_PATH, 'w') as f:
             json.dump(default_data, f, indent=2)
 
     def save(self):
@@ -60,10 +67,10 @@ class Vault:
             },
             "data": {
                 "disciplines": self.taskManager.disciplines,
-                "tasks": [task.to_dict() for task in self.taskManager.tasks]
+                "tasks": self.taskManager.tasks
             }
         }
 
-        with open(self.VAULT_PATH, 'w') as f:
+        with open(Config.VAULT_PATH, 'w') as f:
             json.dump(save_data, f, indent=2)
-        print(f"Vault saved to {self.VAULT_PATH}")
+        print(f"Vault saved to {Config.VAULT_PATH}")

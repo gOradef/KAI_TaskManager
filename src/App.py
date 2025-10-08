@@ -1,6 +1,5 @@
 ﻿import argparse
 from Vault import *
-from TaskManager import TaskManager
 from Interface import TextualApp
 
 
@@ -26,10 +25,10 @@ def setup():
     args = parser.parse_args()
 
     if args.vault_path:
-        Vault.VAULT_PATH = args.vault_path
-        print(f'Using custom location for vault: {Vault.VAULT_PATH}')
+        Config.VAULT_PATH = args.vault_path
+        print(f'Using custom location for vault: {Config.VAULT_PATH}')
     else:
-        print(f'Using default location for vault: {Vault.VAULT_PATH}')
+        print(f'Using default location for vault: {Config.VAULT_PATH}')
 
 
 def init():

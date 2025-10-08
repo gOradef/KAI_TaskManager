@@ -1,9 +1,12 @@
+import textual.widgets
 from textual.binding import Binding
-from textual.widgets import Welcome, Label, Button, Header, Footer
+from textual.layouts.horizontal import HorizontalLayout
+from textual.layouts.vertical import VerticalLayout
+from textual.widgets import Welcome, Label, Button, Header, Footer, ListView, ListItem
 
 from textual import on
 from TaskManager import TaskManager
-from textual.app import App as TUI
+from textual.app import App as TUI, ComposeResult
 from textual import events
 from Vault import Vault
 class TextualApp(TUI):
@@ -15,30 +18,50 @@ class TextualApp(TUI):
 
     BINDINGS = [
         # Optional
-        # Binding("ctrl+q", "none", "None", show=False, priority=True),
-        # Binding("ctrl+c", "quit", "Quit", show=False, priority=True),
+        Binding("ctrl+q", "exit_app", "Save & Quit", show=False, priority=True),
 
         ("c", "create_new_task()", "Create new task"),
+        ("e", "edit_task()", "Edit selected task"),
         ("f", "search_menu()", "Search menu"),
         ("h", "home_page()", "Open home page"),
     ]
     def action_search_menu(self):
         self.notify("AYOOOOOOOO")
     def action_home_page(self):
-        pass
+        self.refresh()
     def action_create_new_task(self):
-        pass
+        for obj in self.taskManager.disciplines:
+            self.mount(Label(obj["id"]))
+            self.mount(Label(obj["name"]))
 
+    def action_exit_app(self):
+        self.vault.save()
+        self.exit()
 
-    def on_mount(self) -> None:
+    def compose(self) -> ComposeResult:
+        # Yield other main widgets
+        yield Header()
+        yield Footer()
+
+        list_view_all = ListView(*[ListItem(Label(task["name"])) for task in self.taskManager.tasks])
+
+        # with HorizontalLayout():
+        #     with VerticalLayout():
+        #         yield list_view_all
+        #     with VerticalLayout():
+        yield list_view_al    def on_mount(self) -> None:
+        # Set up styles and titles here
         self.screen.styles.background = "#333"
         TUI.title = f'Active vault: \'{self.vault.meta.name}\''
         TUI.sub_title = f'last update: {self.vault.meta.last_updated}'
-        self.mount(Header())
-        self.mount(Footer())
 
-        for dis in self.taskManager.disciplines:
-            self.mount(Button(dis, classes="discipline_btn", id=f'd_{self.taskManager.disciplines.index(dis)}'))
+    def on_list_view_selected(self, event: ListView.Selected) -> None:
+        # Get the selected item
+        selected_item = event.item
+        # Get the index
+        selected_index = event.list_view.index
+        # Do something with the selection
+        self.notify(f"Selected: {self.taskManager.tasks[selected_index]['name']}")
 
     def __init__(self, user_vault: Vault):
         super().__init__()
@@ -47,7 +70,6 @@ class TextualApp(TUI):
 
     @on(Button.Pressed, ".discipline_btn")
     def exit_app(self):
-        self.exit()
-
+        pass
     def start(self):
         self.run()
