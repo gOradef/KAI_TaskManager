@@ -55,8 +55,21 @@ class Vault:
             json.dump(default_data, f, indent=2)
 
     def save(self):
-        # Update metadata
+    # Update metadata
         self.meta.last_updated = datetime.now().isoformat()
+
+        # Convert tasks to serializable format
+        serializable_tasks = []
+        for task in self.taskManager.tasks:
+            task_dict = {
+                'id': task.id,
+                'discipline': task.discipline,
+                'name': task.name,
+                'description': task.description,
+                'status': task.status.value,  # Get the underlying string value
+                'deadline': task.deadline
+            }
+            serializable_tasks.append(task_dict)
 
         # Prepare data for saving
         save_data = {
@@ -67,7 +80,7 @@ class Vault:
             },
             "data": {
                 "disciplines": self.taskManager.disciplines,
-                "tasks": self.taskManager.tasks
+                "tasks": serializable_tasks
             }
         }
 

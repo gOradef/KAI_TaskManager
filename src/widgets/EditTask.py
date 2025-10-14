@@ -1,4 +1,4 @@
-﻿from textual import on
+from textual import on
 from textual.app import ComposeResult
 from textual.containers import Grid
 from textual.screen import ModalScreen
@@ -6,25 +6,33 @@ from textual.widgets import Button, Input, MaskedInput, Select
 import datetime
 from TaskManager import Task
 
-class ModalScreenOfCreatingTask(ModalScreen[Task]):
+class ModalScreenOfEditingTask(ModalScreen[Task]):
 
     BINDINGS = [
         ("escape", "dismiss()", "Вернуться")
     ]
 
-    def __init__(self, disciplines: list[str], name=None, id=None, classes=None):
+    def __init__(self, disciplines: list[str], task_to_edit: Task, name=None, id=None, classes=None):
         super().__init__(name, id, classes)
         self.disciplines = disciplines
-        self.task_name = ""
-        self.task_discipline = ""
-        self.task_description = ""
-        self.task_deadline = ""  # Fixed: use actual date, not module
 
-    def compose(self) -> ComposeResult:    
+        self.task_id = task_to_edit.id
+        self.task_name = task_to_edit.name
+        self.task_discipline = task_to_edit.discipline
+        self.task_description = task_to_edit.description
+        self.task_deadline = task_to_edit.deadline
+
+    def compose(self) -> ComposeResult:  
+
+        if self.task_discipline == "":
+            self.task_discipline = Select.BLANK  
+        elif (self.task_discipline not in self.disciplines):
+            self.task_discipline = Select.BLANK
+        
         yield Grid(
-            Input(self.task_name, placeholder="Введите название задачи", id="task_name"),
-            Select.from_values(self.disciplines, prompt="Выберите дисциплину"),
-            Input(self.task_description, placeholder="Введите описание (опционально)", id="task_description"),
+            Input(self.task_name, placeholder="Название задачи", id="task_name"),
+            Select.from_values(self.disciplines, prompt="Дисциплина", value=self.task_discipline),
+            Input(self.task_description, placeholder="Описание (опционально)", id="task_description"),
             MaskedInput("99.99.9999", placeholder="DD.MM.YY", value=self.task_deadline),
             Button("Сохранить", variant="primary", id="Save"),
             Button("Cancel", variant="error", id="cancel"),
@@ -44,16 +52,15 @@ class ModalScreenOfCreatingTask(ModalScreen[Task]):
 
     @on(MaskedInput.Changed)
     def date_changed(self, event: MaskedInput.Changed) -> None:
-        # try:
+        try:
             # Parse the date string from MaskedInput
-            # if event.value and len(event.value) == 10:  # YYYY-MM-DD format
+            if event.value and len(event.value) == 10:  # YYYY-MM-DD format
                 # year, month, day = map(int, event.value.split('-'))
                 # self.task_deadline = datetime.date(year, month, day)
-        # except (ValueError, AttributeError):
+                self.task_deadline = event.value
+        except (ValueError, AttributeError):
             # Handle invalid date
-            # pass
-        self.task_deadline = event.value
-        pass
+            pass
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         def is_name_valid():
@@ -65,6 +72,7 @@ class ModalScreenOfCreatingTask(ModalScreen[Task]):
             else:
             # Create and return the Task
                 self.dismiss(Task(
+                    id=self.task_id,
                     name=self.task_name,
                     discipline=self.task_discipline,
                     description=self.task_description,
@@ -72,6 +80,6 @@ class ModalScreenOfCreatingTask(ModalScreen[Task]):
                 ))
         elif event.button.id == "cancel":
             self.dismiss(None)
-
+    
     def exit(self):
         self.dismiss(None)

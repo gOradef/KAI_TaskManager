@@ -2,12 +2,12 @@
 import uuid
 from enum import Enum
 
-class Task:
+class Task:    
     class Status(Enum):
-        TODO = 0
-        IN_PROGRESS = 1
-        COMPLETE = 2
-        ARCHIVED = 3
+        TODO = "TODO"
+        IN_PROGRESS = "IN_PROGRESS"
+        COMPLETED = "COMPLETED"
+        ARCHIVED = "ARCHIVED"
 
 
     id: str
@@ -15,10 +15,13 @@ class Task:
     name: str
     status: Status
     description: str
-    deadline: datetime.date
+    deadline: str
 
-    def __init__(self, name, discipline, description = None, deadline = None):
-        self.id = uuid.uuid4().__str__()
+    def __init__(self, name, discipline, description = None, deadline = None, id = None):
+        if id is not None:
+            self.id = id
+        else:
+            self.id = uuid.uuid4().__str__()
         self.status = self.Status.TODO
 
         self.name = name
@@ -26,21 +29,49 @@ class Task:
         self.description = description
         self.deadline = deadline
 
-    def __str__(self):
-        return {
-            "id": self.id,
-            "discipline": self.discipline,
-            "name": self.name,
-            "status": self.status.value,
-            "deadline": self.deadline.__str__()
-        }
+    # def __str__(self):
+    #     return {
+    #         "id": self.id,
+    #         "discipline": self.discipline,
+    #         "name": self.name,
+    #         "desciption": self.description,
+    #         "status": self.status.value,
+    #         "deadline": self.deadline
+    #     }
 
 class TaskManager:
     disciplines: list[str]
     tasks : list[Task]
+    
+    def tasks_filter_expired(self):
+        def isValid(task: Task):
+            return datetime.datetime.strptime(task["deadline"], "%Y-%m-%d") < datetime.datetime.today()
+        
+        filtered_tasks = list(filter(isValid, self.tasks))
+
+        return filtered_tasks
+        
+    def tasks_filter_week(self):
+        def isValid():
+            pass
+        pass
+    def tasks_filter_weekPlus(self):
+        def isValid():
+            pass
+        pass
+
     def __init__(self, data):
         self.disciplines: list[str] = data["disciplines"]
-        self.tasks: list[Task] = list[Task](data["tasks"])
+        # self.tasks: list[Task] = list[Task](data["tasks"]) # Is it uses
+
+        self.tasks = list()
+        for task in data["tasks"]:
+            self.tasks.append(Task(id=task["id"],
+                                   name= task["name"],
+                                   discipline=task["discipline"],
+                                   description=task["description"],
+                                   deadline=task["deadline"]))
+            
 
     # Category: disciplines
     def addNewDiscipline(self, newDiscipline: str):

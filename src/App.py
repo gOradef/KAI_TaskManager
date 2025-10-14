@@ -4,18 +4,18 @@ from Interface import TextualApp
 
 
 class App:
-    Vault: Vault
+    vault: Vault
     interface: TextualApp
 
     def __init__(self):
-        self.Vault = Vault()
-        self.interface = TextualApp(self.Vault)
+        self.vault = Vault()
+        self.interface = TextualApp(self.vault)
 
     def run(self):
         self.interface.start()
 
     def dump(self):
-        self.Vault.save()
+        self.vault.save()
 
 
 def setup():
