@@ -17,12 +17,15 @@ class Task:
     description: str
     deadline: str
 
-    def __init__(self, name, discipline, description = None, deadline = None, id = None):
+    def __init__(self, name, discipline, description = None, status = None, deadline = None, id = None):
         if id is not None:
             self.id = id
         else:
             self.id = uuid.uuid4().__str__()
-        self.status = self.Status.TODO
+        if status == None:
+            self.status = Task.Status.TODO
+        else:
+            self.status = status
 
         self.name = name
         self.discipline = discipline
@@ -90,4 +93,14 @@ class TaskManager:
     def markAsInProgressTask(self, task_id):
         self.tasks[task_id].status = Task.Status.IN_PROGRESS
     def markAsCompletedTask(self, task_id):
-        self.tasks[task_id].status = Task.Status.COMPLETE
+        """Mark a task as completed by its ID"""
+        for task in self.tasks:
+            # Handle both Task objects and dictionaries
+            task_id_to_check = task.id if hasattr(task, 'id') else task.get('id')
+            if task_id_to_check == task_id:
+                if hasattr(task, 'status'):
+                    task.status = task.Status.COMPLETED  # or Task.Status.COMPLETED depending on your import
+                break
+        else:
+            # Task not found
+            print(f"Task with ID {task_id} not found")

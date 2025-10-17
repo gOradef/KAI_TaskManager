@@ -2,7 +2,7 @@
   "meta": {
     "name": "KAI",
     "version": "0.1",
-    "last_updated": "2025-10-14T19:06:16.283235"
+    "last_updated": "2025-10-17T18:55:50.215545"
   },
   "data": {
     "disciplines": [
@@ -16,7 +16,7 @@
         "discipline": "\u0444\u043e\u0440\u043c\u0430\u0442\u0438\u043a\u0430 \u0438 \u0432\u044b\u0447\u0438\u0441\u043b\u0438\u0442\u0435\u043b\u044c\u043d\u0430\u044f \u0442\u0435\u0445\u043d\u0438\u043a\u0430",
         "name": "0",
         "description": "\u041d\u0435\u043c\u043d\u043e\u0433\u043e \u043e\u043f\u0438\u0441\u0430\u043d\u0438\u044f",
-        "status": "TODO",
+        "status": "COMPLETED",
         "deadline": "14.10-2030"
       },
       {

@@ -1,3 +1,46 @@
 Label {
     color: white;
 }
+
+#discipline-container {
+    padding: 1;
+    width: 60;
+    height: 20;
+    background: $surface;
+    border: panel $primary;
+}
+
+.title {
+    text-style: bold;
+    text-align: center;
+    margin-bottom: 1;
+}
+
+.subtitle {
+    text-style: underline;
+    margin: 1 0;
+}
+
+.input-section, .edit-section, .action-buttons {
+    margin: 1 0;
+    width: auto
+}
+
+.input-section > Input {
+    width: 3fr;
+}
+
+.input-section > Button, .edit-section > Button {
+    width: 1fr;
+    margin-left: 1;
+}
+
+.edit-section {
+    border-top: solid $primary;
+}
+
+#disciplines-list {
+    height: 6;
+    border: solid $primary;
+    margin: 1 0;
+}

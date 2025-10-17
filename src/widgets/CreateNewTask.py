@@ -18,7 +18,7 @@ class ModalScreenOfCreatingTask(ModalScreen[Task]):
         self.task_name = ""
         self.task_discipline = ""
         self.task_description = ""
-        self.task_deadline = ""  # Fixed: use actual date, not module
+        self.task_deadline = ""
 
     def compose(self) -> ComposeResult:    
         yield Grid(
@@ -44,16 +44,7 @@ class ModalScreenOfCreatingTask(ModalScreen[Task]):
 
     @on(MaskedInput.Changed)
     def date_changed(self, event: MaskedInput.Changed) -> None:
-        # try:
-            # Parse the date string from MaskedInput
-            # if event.value and len(event.value) == 10:  # YYYY-MM-DD format
-                # year, month, day = map(int, event.value.split('-'))
-                # self.task_deadline = datetime.date(year, month, day)
-        # except (ValueError, AttributeError):
-            # Handle invalid date
-            # pass
         self.task_deadline = event.value
-        pass
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         def is_name_valid():
