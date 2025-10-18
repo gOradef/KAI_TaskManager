@@ -27,6 +27,7 @@ class TextualApp(TUI):
         ("e", "edit_disciplines()", "Edit list of disciplines"),
         ("f", "search_menu()", "filter by .."),
         ("h", "home_page()", "Open home page"),
+        ("d", "exit_app()", "Exit") #TODO Remove from prod
     ]
 
     selected_task: Task
@@ -117,7 +118,7 @@ class TextualApp(TUI):
             
             # Add completion hint
             if task_status == Task.Status.COMPLETED or task_status == "COMPLETED":
-                display_text = f"✅Y {task.name}"
+                display_text = f"✅ {task.name}"
             else:
                 display_text = f"📝 {task.name}"
             

@@ -32,16 +32,6 @@ class Task:
         self.description = description
         self.deadline = deadline
 
-    # def __str__(self):
-    #     return {
-    #         "id": self.id,
-    #         "discipline": self.discipline,
-    #         "name": self.name,
-    #         "desciption": self.description,
-    #         "status": self.status.value,
-    #         "deadline": self.deadline
-    #     }
-
 class TaskManager:
     disciplines: list[str]
     tasks : list[Task]
@@ -73,6 +63,7 @@ class TaskManager:
                                    name= task["name"],
                                    discipline=task["discipline"],
                                    description=task["description"],
+                                   status=task["status"],
                                    deadline=task["deadline"]))
             
 

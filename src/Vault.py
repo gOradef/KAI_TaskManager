@@ -3,7 +3,7 @@ from pathlib import Path
 from datetime import datetime
 import json
 
-from TaskManager import TaskManager
+from TaskManager import TaskManager, Task
 from Config import Config
 
 class Vault:
@@ -55,18 +55,23 @@ class Vault:
             json.dump(default_data, f, indent=2)
 
     def save(self):
-    # Update metadata
+        # Update metadata
         self.meta.last_updated = datetime.now().isoformat()
 
         # Convert tasks to serializable format
         serializable_tasks = []
+        def parseStatus(task):
+            if isinstance(task.status, Task.Status):
+                return task.status.value
+            else:
+                return task.status
         for task in self.taskManager.tasks:
             task_dict = {
                 'id': task.id,
                 'discipline': task.discipline,
                 'name': task.name,
                 'description': task.description,
-                'status': task.status.value,  # Get the underlying string value
+                'status': parseStatus(task),
                 'deadline': task.deadline
             }
             serializable_tasks.append(task_dict)
