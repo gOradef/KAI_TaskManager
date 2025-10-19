@@ -15,9 +15,10 @@ class Task:
     name: str
     status: Status
     description: str
+    priority: int # 1 - is higher, 4 - is lowest prio
     deadline: str
 
-    def __init__(self, name, discipline, description = None, status = None, deadline = None, id = None):
+    def __init__(self, name, discipline, description = None, status = None, priority = None, deadline = None, id = None):
         if id is not None:
             self.id = id
         else:
@@ -30,6 +31,7 @@ class Task:
         self.name = name
         self.discipline = discipline
         self.description = description
+        self.priority = priority
         self.deadline = deadline
 
 class TaskManager:
@@ -55,7 +57,6 @@ class TaskManager:
 
     def __init__(self, data):
         self.disciplines: list[str] = data["disciplines"]
-        # self.tasks: list[Task] = list[Task](data["tasks"]) # Is it uses
 
         self.tasks = list()
         for task in data["tasks"]:
@@ -64,6 +65,7 @@ class TaskManager:
                                    discipline=task["discipline"],
                                    description=task["description"],
                                    status=task["status"],
+                                   priority=task["priority"],
                                    deadline=task["deadline"]))
             
 
@@ -77,7 +79,7 @@ class TaskManager:
 
     # Category: tasks
     def createNewTask(self, task: Task):
-        self.tasks.append(task.__str__())
+        self.tasks.append(task)
 
     def setDescriptionToTask(self, task_id, task_description):
         self.tasks[task_id].description = task_description

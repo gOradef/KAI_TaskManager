@@ -19,11 +19,13 @@ class ModalScreenOfCreatingTask(ModalScreen[Task]):
         self.task_discipline = ""
         self.task_description = ""
         self.task_deadline = ""
+        self.task_priority = None
 
     def compose(self) -> ComposeResult:    
         yield Grid(
             Input(self.task_name, placeholder="Введите название задачи", id="task_name"),
-            Select.from_values(self.disciplines, prompt="Выберите дисциплину"),
+            Select.from_values(self.disciplines, prompt="Выберите дисциплину", id="task_discipline"),
+            Select.from_values([1, 2, 3, 4], prompt="Выберите приоритет", id="task_priority"),
             Input(self.task_description, placeholder="Введите описание (опционально)", id="task_description"),
             MaskedInput("99.99.9999", placeholder="DD.MM.YY", value=self.task_deadline),
             Button("Сохранить", variant="primary", id="Save"),
@@ -31,9 +33,13 @@ class ModalScreenOfCreatingTask(ModalScreen[Task]):
             id="dialog"
         )
 
-    @on(Select.Changed)
+    @on(Select.Changed, "#task_discipline")
     def select_changed(self, event: Select.Changed) -> None:
         self.task_discipline = event.value
+        
+    @on(Select.Changed, "#task_priority")
+    def select_changed(self, event: Select.Changed) -> None:
+        self.task_priority = event.value
 
     @on(Input.Changed)
     def input_changed(self, event: Input.Changed) -> None:
@@ -59,7 +65,8 @@ class ModalScreenOfCreatingTask(ModalScreen[Task]):
                     name=self.task_name,
                     discipline=self.task_discipline,
                     description=self.task_description,
-                    deadline=self.task_deadline
+                    deadline=self.task_deadline,
+                    priority=self.task_priority
                 ))
         elif event.button.id == "cancel":
             self.dismiss(None)
