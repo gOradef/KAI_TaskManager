@@ -25,15 +25,16 @@ class TextualApp(TUI):
         ("Enter", "", "Edit selected task"),
         ("m", "mark_as_completed()", "Mark as completed"),
         ("e", "edit_disciplines()", "Edit list of disciplines"),
-        ("f", "search_menu()", "filter by .."),
+        ("f", "filter_tasks()", "filter by .."),
         ("h", "home_page()", "Open home page"),
         ("d", "exit_app()", "Exit") #TODO Remove from prod
     ]
 
     selected_task: Task
 
-    def action_search_menu(self):
-        self.notify(self.taskManager.tasks_filter_expired)
+    def action_filter_tasks(self):
+        self.taskManager.tasks_filter_expired()
+
     def action_home_page(self):
         self.refresh()
 
@@ -75,22 +76,24 @@ class TextualApp(TUI):
             handle_disciplines_result
         )
 
-    def update_task_list(self):
+    def update_task_list(self, header = None):
         """Update the ListView with current tasks"""
+        header_title = self.query_one("#header_title")
         list_view = self.query_one("#list_view_all")
         list_view.clear()
         
         # Add all current tasks to the ListView
         for task in self.taskManager.tasks:
             task_name = task.name if hasattr(task, 'name') else task.get("name", "Unnamed Task")
-            
+            #TODO ??? throwing here
+
             # Get task status
             if hasattr(task, 'status'):
                 task_status = task.status
             else:
                 task_status = task.get("status", "TODO")
             
-            # Add appropriate icon based on status
+            # Add icon based on status
             if task_status == Task.Status.COMPLETED or task_status == "COMPLETED":
                 display_text = f"✅ {task_name}"
             elif task_status == Task.Status.IN_PROGRESS or task_status == "IN_PROGRESS":

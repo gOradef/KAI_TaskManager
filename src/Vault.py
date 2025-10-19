@@ -30,6 +30,7 @@ class Vault:
         )
         self.taskManager = TaskManager(self.VAULT_J["data"])
 
+    #depr
     def createNewVault(self):
         default_data = {
             "meta": {
@@ -72,6 +73,7 @@ class Vault:
                 'name': task.name,
                 'description': task.description,
                 'status': parseStatus(task),
+                'priority': task.priority,
                 'deadline': task.deadline
             }
             serializable_tasks.append(task_dict)

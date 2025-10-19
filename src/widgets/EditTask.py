@@ -2,7 +2,7 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import Grid
 from textual.screen import ModalScreen
-from textual.widgets import Button, Input, MaskedInput, Select
+from textual.widgets import Button, Input, MaskedInput, Select, Label
 import datetime
 from TaskManager import Task
 
@@ -21,6 +21,7 @@ class ModalScreenOfEditingTask(ModalScreen[Task]):
         self.task_discipline = task_to_edit.discipline
         self.task_description = task_to_edit.description
         self.task_deadline = task_to_edit.deadline
+        self.task_priority = task_to_edit.priority
 
     def compose(self) -> ComposeResult:  
 
@@ -32,6 +33,7 @@ class ModalScreenOfEditingTask(ModalScreen[Task]):
         yield Grid(
             Input(self.task_name, placeholder="Название задачи", id="task_name"),
             Select.from_values(self.disciplines, prompt="Дисциплина", value=self.task_discipline),
+            Select.from_values([1, 2, 3, 4], prompt="Выберите приоритет", id="task_priority", value=self.task_priority),
             Input(self.task_description, placeholder="Описание (опционально)", id="task_description"),
             MaskedInput("99.99.9999", placeholder="DD.MM.YY", value=self.task_deadline),
             Button("Сохранить", variant="primary", id="Save"),
@@ -76,7 +78,8 @@ class ModalScreenOfEditingTask(ModalScreen[Task]):
                     name=self.task_name,
                     discipline=self.task_discipline,
                     description=self.task_description,
-                    deadline=self.task_deadline
+                    deadline=self.task_deadline,
+                    priority=self.task_priority
                 ))
         elif event.button.id == "cancel":
             self.dismiss(None)
