@@ -1,5 +1,7 @@
 from textual.binding import Binding
-from textual.widgets import Label, Header, Footer, ListView, ListItem
+from textual.reactive import reactive
+from textual.widget import Widget
+from textual.widgets import Label, Header, Footer, ListView, ListItem, Static
 
 from textual import on
 from TaskManager import TaskManager
@@ -31,11 +33,17 @@ class TextualApp(TUI):
     ]
 
     selected_task: Task
-    current_list_group: str
+    current_list_group: TaskManager.Filter.FilterTypes
 
     def action_filter_tasks(self):
-        self.taskManager.filters.get_tasks_with_filter(TaskManager.Filter.FilterTypes.EXPIRED)
+        self.current_list_group = TaskManager.Filter.get_next_filter(self.current_list_group)
+        self.current_list_group_name = self.current_list_group.value[1]
 
+        header_title = self.query_one("#header_title")
+        header_title.update(self.current_list_group_name)
+
+        tasks = self.taskManager.filters.get_tasks_with_filter(self.current_list_group)
+        self.update_task_list(tasks)
     def action_home_page(self):
         self.refresh()
 
@@ -77,14 +85,15 @@ class TextualApp(TUI):
             handle_disciplines_result
         )
 
-    def update_task_list(self, filter = None):
-        """Update the ListView with current tasks"""
-        header_title = self.query_one("#header_title")
+    def update_task_list(self, tasks = None):
         list_view = self.query_one("#list_view_all")
         list_view.clear()
-        
+
+        if tasks is None:
+            tasks = self.taskManager.tasks
+
         # Add all current tasks to the ListView
-        for task in self.taskManager.tasks:
+        for task in tasks:
             task_name = task.name if hasattr(task, 'name') else task.get("name", "Unnamed Task")
 
             # Get task status
@@ -110,7 +119,7 @@ class TextualApp(TUI):
         yield Header()
         yield Footer()
 
-        yield Label(self.current_list_group, id="header_title")
+        yield Static(self.current_list_group.value[1], id="header_title")
         # Create list items with completion hints
         list_items = []
         for task in self.taskManager.tasks:
@@ -157,7 +166,8 @@ class TextualApp(TUI):
         super().__init__()
         self.vault = user_vault
         self.taskManager = self.vault.taskManager
-        self.current_list_group = "Today"
+        self.current_list_group = TaskManager.Filter.FilterTypes.EXPIRED
+        self.current_list_group_name = self.current_list_group.value
 
     def start(self):
         self.run()

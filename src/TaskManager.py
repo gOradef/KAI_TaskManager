@@ -37,26 +37,42 @@ class Task:
 class TaskManager:
     disciplines: list[str]
     tasks : list[Task]
+
     class Filter:
         class FilterTypes(Enum):
-            EXPIRED = -1
-            TODAY = 0
-            WEEK = 1
-            FUTURE = 2
-            ALL = 3
+            EXPIRED = (-1, "Просрочено")
+            TODAY = (0, "Сегодня")
+            WEEK = (1, "В течение недели")
+            FUTURE = (2, "В будущем")
+            ALL = (3, "Все")
+
+        @classmethod
+        def get_next_filter(cls, current_filter):
+            filters = list(cls.FilterTypes)
+            current_index = filters.index(current_filter)
+            next_index = (current_index + 1) % len(filters)
+            return filters[next_index]
 
         def get_tasks_with_filter(self, filterType: FilterTypes):
             def getTimeOfTask(task: Task) -> datetime.datetime:
                 return datetime.datetime.strptime(task.deadline, "%d.%m.%y")
-            def isValid(task: Task): # foo for filtering tasks
+
+            def filter_task(task: Task) -> bool:
                 pass
+            def isValid(task: Task): # foo prototype for filtering tasks
+                if task.deadline == "":
+                    return True
+                return filter_task(task)
+
             match filterType:
                 case self.FilterTypes.EXPIRED:
-                    def isValid(task: Task):
+                    def isExpired(task: Task):
                         return getTimeOfTask(task) < datetime.datetime.today()
+                    filter_task = isExpired
                 case self.FilterTypes.TODAY:
-                    def isValid(task: Task):
+                    def isToday(task: Task):
                         return getTimeOfTask(task) == datetime.datetime.today()
+                    filter_task = isToday
                 case self.FilterTypes.WEEK:
                     pass # TODO
                 case self.FilterTypes.FUTURE:
@@ -64,9 +80,7 @@ class TaskManager:
                 case self.FilterTypes.ALL:
                     pass
 
-            filtered_tasks = list(filter(isValid, self._get_tasks_list()))
-
-            return filtered_tasks
+            return list(filter(isValid, self._get_tasks_list())) # filtered tasks
 
         def get_tasks_filter_expired(self):
             def isValid(task: Task):
