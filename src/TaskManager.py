@@ -37,27 +37,73 @@ class Task:
 class TaskManager:
     disciplines: list[str]
     tasks : list[Task]
-    
-    def tasks_filter_expired(self):
-        def isValid(task: Task):
-            return datetime.datetime.strptime(task["deadline"], "%Y-%m-%d") < datetime.datetime.today()
-        
-        filtered_tasks = list(filter(isValid, self.tasks))
+    class Filter:
+        class FilterTypes(Enum):
+            EXPIRED = -1
+            TODAY = 0
+            WEEK = 1
+            FUTURE = 2
+            ALL = 3
 
-        return filtered_tasks
-        
-    def tasks_filter_week(self):
-        def isValid():
+        def get_tasks_with_filter(self, filterType: FilterTypes):
+            def getTimeOfTask(task: Task) -> datetime.datetime:
+                return datetime.datetime.strptime(task.deadline, "%d.%m.%y")
+            def isValid(task: Task): # foo for filtering tasks
+                pass
+            match filterType:
+                case self.FilterTypes.EXPIRED:
+                    def isValid(task: Task):
+                        return getTimeOfTask(task) < datetime.datetime.today()
+                case self.FilterTypes.TODAY:
+                    def isValid(task: Task):
+                        return getTimeOfTask(task) == datetime.datetime.today()
+                case self.FilterTypes.WEEK:
+                    pass # TODO
+                case self.FilterTypes.FUTURE:
+                    pass
+                case self.FilterTypes.ALL:
+                    pass
+
+            filtered_tasks = list(filter(isValid, self._get_tasks_list()))
+
+            return filtered_tasks
+
+        def get_tasks_filter_expired(self):
+            def isValid(task: Task):
+                return datetime.datetime.strptime(task["deadline"], "%Y-%m-%d") < datetime.datetime.today()
+            
+            filtered_tasks = list(filter(isValid, self._get_tasks_list()))
+
+            return filtered_tasks
+
+        def get_tasks_filter_expired(self):
+            def isValid(task: Task):
+                return datetime.datetime.strptime(task["deadline"], "%Y-%m-%d") < datetime.datetime.today()
+            
+            filtered_tasks = list(filter(isValid, self._get_tasks_list()))
+
+            return filtered_tasks
+
+
+
+        def __init__(self, Parent):
+            self.parent_ref = Parent
+
+        def _get_tasks_list(self) -> list[Task]:
+            return self.parent_ref.tasks
+
+        def get_tasks_filter_week(self):
+            def isValid():
+                pass
             pass
-        pass
-    def tasks_filter_weekPlus(self):
-        def isValid():
+        def get_tasks_filter_weekPlus(self):
+            def isValid():
+                pass
             pass
-        pass
 
     def __init__(self, data):
         self.disciplines: list[str] = data["disciplines"]
-
+        self.filters = self.Filter(self)
         self.tasks = list()
         for task in data["tasks"]:
             self.tasks.append(Task(id=task["id"],

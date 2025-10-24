@@ -26,14 +26,15 @@ class TextualApp(TUI):
         ("m", "mark_as_completed()", "Mark as completed"),
         ("e", "edit_disciplines()", "Edit list of disciplines"),
         ("f", "filter_tasks()", "filter by .."),
-        ("h", "home_page()", "Open home page"),
-        ("d", "exit_app()", "Exit") #TODO Remove from prod
+        ("h", "home_page()", "Open home page")
+        # ("Esc", "exit_app()", "Exit") #TODO Remove from prod
     ]
 
     selected_task: Task
+    current_list_group: str
 
     def action_filter_tasks(self):
-        self.taskManager.tasks_filter_expired()
+        self.taskManager.filters.get_tasks_with_filter(TaskManager.Filter.FilterTypes.EXPIRED)
 
     def action_home_page(self):
         self.refresh()
@@ -76,7 +77,7 @@ class TextualApp(TUI):
             handle_disciplines_result
         )
 
-    def update_task_list(self, header = None):
+    def update_task_list(self, filter = None):
         """Update the ListView with current tasks"""
         header_title = self.query_one("#header_title")
         list_view = self.query_one("#list_view_all")
@@ -85,7 +86,6 @@ class TextualApp(TUI):
         # Add all current tasks to the ListView
         for task in self.taskManager.tasks:
             task_name = task.name if hasattr(task, 'name') else task.get("name", "Unnamed Task")
-            #TODO ??? throwing here
 
             # Get task status
             if hasattr(task, 'status'):
@@ -110,6 +110,7 @@ class TextualApp(TUI):
         yield Header()
         yield Footer()
 
+        yield Label(self.current_list_group, id="header_title")
         # Create list items with completion hints
         list_items = []
         for task in self.taskManager.tasks:
@@ -156,6 +157,7 @@ class TextualApp(TUI):
         super().__init__()
         self.vault = user_vault
         self.taskManager = self.vault.taskManager
+        self.current_list_group = "Today"
 
     def start(self):
         self.run()
