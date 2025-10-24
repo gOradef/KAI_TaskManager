@@ -27,7 +27,7 @@ class ModalScreenOfCreatingTask(ModalScreen[Task]):
             Select.from_values(self.disciplines, prompt="Выберите дисциплину", id="task_discipline"),
             Select.from_values([1, 2, 3, 4], prompt="Выберите приоритет", id="task_priority"),
             Input(self.task_description, placeholder="Введите описание (опционально)", id="task_description"),
-            MaskedInput("99.99.9999", placeholder="DD.MM.YY", value=self.task_deadline, id="task_date"),
+            MaskedInput("99.99.99", placeholder="DD.MM.YY", value=self.task_deadline, id="task_date"),
             Button("Сохранить", variant="primary", id="Save"),
             Button("Cancel", variant="error", id="cancel"), id="dialog"
         )
