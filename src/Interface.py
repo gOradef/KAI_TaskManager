@@ -1,7 +1,6 @@
+from asyncio import sleep
 from textual.binding import Binding
-from textual.reactive import reactive
-from textual.widget import Widget
-from textual.widgets import Label, Header, Footer, ListView, ListItem, Static
+from textual.widgets import Label, Header, Footer, ListView, ListItem, Static, Tabs, Tab
 
 from textual import on
 from TaskManager import TaskManager
@@ -25,25 +24,43 @@ class TextualApp(TUI):
 
         ("c", "create_new_task()", "Create new task"),
         ("Enter", "", "Edit selected task"),
-        ("m", "mark_as_completed()", "Mark as completed"),
+        ("d", "archive_task()", "[de]archive task"),
+        ("m", "mark_as()", "Mark as ..."),
+        # ("f", "next_tab()", "filter by .."),
+        # ("shift+f", "previous_tab()", "filter by .."),
         ("e", "edit_disciplines()", "Edit list of disciplines"),
-        ("f", "filter_tasks()", "filter by .."),
         ("h", "home_page()", "Open home page")
         # ("Esc", "exit_app()", "Exit") #TODO Remove from prod
     ]
 
     selected_task: Task
-    current_list_group: TaskManager.Filter.FilterTypes
+    current_filter: TaskManager.Filter.FilterTypes
 
-    def action_filter_tasks(self):
-        self.current_list_group = TaskManager.Filter.get_next_filter(self.current_list_group)
-        self.current_list_group_name = self.current_list_group.value[1]
+    def renderTasks(self):
+        def update_task_list(self, tasks: list[Task]):
+            """Updated listview with provided tasks"""
+            #TODO MAKE SORTING
+            list_view = self.query_one("#list_view_all")
+            list_view.clear()
 
-        header_title = self.query_one("#header_title")
-        header_title.update(self.current_list_group_name)
+            for task in tasks:
+                task_name = task.name
+                task_status = task.status
+                display_text = f""
+                
+                match task_status:
+                    case Task.Status.COMPLETED:
+                        display_text = f"✅ {task_name}"
+                    case Task.Status.IN_PROGRESS:
+                        display_text = f"🔄 {task_name}"
+                    case Task.Status.TODO:
+                        display_text = f"📝 {task_name}"
 
-        tasks = self.taskManager.filters.get_tasks_with_filter(self.current_list_group)
-        self.update_task_list(tasks)
+                list_view.append(ListItem(Label(display_text)))
+
+        tasks = self.taskManager.filters.get_tasks_with_filter(self.current_filter)
+        update_task_list(self, tasks)
+
     def action_home_page(self):
         self.refresh()
 
@@ -51,7 +68,7 @@ class TextualApp(TUI):
         def check_task(task: Task | None) -> None:
             if task is not None:
                 self.taskManager.createNewTask(task)
-                self.update_task_list()  # Call a method to update the list
+                self.renderTasks()
     
         self.push_screen(ModalScreenOfCreatingTask(self.taskManager.disciplines), check_task)
     
@@ -59,84 +76,73 @@ class TextualApp(TUI):
         self.vault.save()
         self.exit()
 
-    def action_mark_as_completed(self):
+    def action_archive_task(self):
         list_view = self.query_one("#list_view_all", ListView)  # Replace with your ListView ID
         if list_view.has_focus:
             # ListView is focused
             selected_index = list_view.index
             if selected_index is not None:
                 # Mark the selected task as completed
-                task = self.taskManager.tasks[selected_index]
-                self.taskManager.markAsCompletedTask(task.id)
-                self.update_task_list()
-                self.notify(f"Задача '{task.name}' отмечена как выполненная")
+                task = self.taskManager.current_tasks[selected_index]
+                msg = f"Задача '{task.name}' "
+                if task.isArchived:
+                    self.taskManager.removeFromArchiveTask(task.id)
+                    msg += "перемещена в архив"
+                else:    
+                    self.taskManager.moveToArchiveTask(task.id)
+                    msg += "перемещена из архива"
+                self.renderTasks()
+                self.notify(msg)
+        else:
+            self.notify("Сначала выберите задачу из списка")
+
+    def action_mark_as(self):
+        list_view = self.query_one("#list_view_all", ListView)  # Replace with your ListView ID
+        if list_view.has_focus:
+            # ListView is focused
+            selected_index = list_view.index
+            if selected_index is not None:
+                # Mark the selected task as completed
+                task = self.taskManager.current_tasks[selected_index]
+                msg = f"Задаче '{task.name}' установлен статус: "
+                match task.status:
+                    case Task.Status.TODO:
+                        self.taskManager.markAsTask(task.id, Task.Status.IN_PROGRESS)
+                        msg += "в процессе"
+                    case Task.Status.IN_PROGRESS:
+                        self.taskManager.markAsTask(task.id, Task.Status.COMPLETED)
+                        msg += "выполнена"
+                    case Task.Status.COMPLETED:
+                        self.taskManager.markAsTask(task.id, Task.Status.TODO)
+                        msg += "сделать потом"
+                self.renderTasks()
+                self.notify(msg)
         else:
             self.notify("Сначала выберите задачу из списка")
     def action_edit_disciplines(self):
         def handle_disciplines_result(result: list[str]) -> None:
             if result is not None:
-                # User pressed Save - update disciplines
                 self.taskManager.disciplines = result
                 self.notify("Дисциплины обновлены", severity="success")
-        # else: User pressed Cancel - do nothing
     
         self.push_screen(
             DisciplineEditor(self.taskManager.disciplines.copy()),
             handle_disciplines_result
         )
 
-    def update_task_list(self, tasks = None):
-        list_view = self.query_one("#list_view_all")
-        list_view.clear()
-
-        if tasks is None:
-            tasks = self.taskManager.tasks
-
-        # Add all current tasks to the ListView
-        for task in tasks:
-            task_name = task.name if hasattr(task, 'name') else task.get("name", "Unnamed Task")
-
-            # Get task status
-            if hasattr(task, 'status'):
-                task_status = task.status
-            else:
-                task_status = task.get("status", "TODO")
-            
-            # Add icon based on status
-            if task_status == Task.Status.COMPLETED or task_status == "COMPLETED":
-                display_text = f"✅ {task_name}"
-            elif task_status == Task.Status.IN_PROGRESS or task_status == "IN_PROGRESS":
-                display_text = f"🔄 {task_name}"
-            elif task_status == Task.Status.TODO or task_status == "TODO":
-                display_text = f"📝 {task_name}"
-            else:
-                display_text = f"❓ {task_name}"
-            
-            list_view.append(ListItem(Label(display_text)))
-
     def compose(self) -> ComposeResult:
         # Yield other main widgets
         yield Header()
         yield Footer()
+        yield Tabs(
+            Tab("Архив", id="archive"),            
+            Tab("Просрочено", id="expired"),
+            Tab("Сегодня", id="today"),
+            Tab("На неделе", id="week"),
+            Tab("Все", id="all")
+        )
 
-        yield Static(self.current_list_group.value[1], id="header_title")
-        # Create list items with completion hints
         list_items = []
-        for task in self.taskManager.tasks:
-            # Get task status
-            if hasattr(task, 'status'):
-                task_status = task.status
-            else:
-                task_status = task.get("status", "TODO")
-            
-            # Add completion hint
-            if task_status == Task.Status.COMPLETED or task_status == "COMPLETED":
-                display_text = f"✅ {task.name}"
-            else:
-                display_text = f"📝 {task.name}"
-            
-            list_items.append(ListItem(Label(display_text)))
-
         list_view_all = ListView(*list_items, id="list_view_all")
         yield list_view_all
 
@@ -145,29 +151,45 @@ class TextualApp(TUI):
         TUI.title = f"Active vault: '{self.vault.meta.name}'"
         TUI.sub_title = f'last update: {self.vault.meta.last_updated}'
 
+    @on(Tabs.TabActivated)
+    def on_tabs_activated(self, event: Tabs.TabActivated) -> None:
+        match event.tab.id:
+            case "archive":
+                self.current_filter = self.taskManager.Filter.FilterTypes.ARCHIVED
+            case "expired":
+                self.current_filter = self.taskManager.Filter.FilterTypes.EXPIRED
+            case "today":
+                self.current_filter = self.taskManager.Filter.FilterTypes.TODAY
+            case "week":
+                self.current_filter = self.taskManager.Filter.FilterTypes.WEEK
+            case "all":
+                self.current_filter = self.taskManager.Filter.FilterTypes.ALL
+                
+        self.renderTasks()
+
     @on(ListView.Selected, "#list_view_all")
     def on_list_view_selected(self, event: ListView.Selected) -> None:
         def insertTask(task: Task):
             if task is not None:
-                for i, existing_task in enumerate(self.taskManager.tasks):
+                for i, existing_task in enumerate(self.taskManager.current_tasks):
                     if existing_task.id == task.id:
-                        self.taskManager.tasks[i] = task
+                        self.taskManager.current_tasks[i] = task
                         break
                 else:
                     self.taskManager.tasks.append(task)
                 
-                self.update_task_list()
+                self._update_task_list()
     
         selected_index = event.list_view.index    
-        self.selected_task: Task = self.taskManager.tasks[selected_index]
+        self.selected_task: Task = self.taskManager.current_tasks[selected_index]
         self.push_screen(ModalScreenOfEditingTask(self.taskManager.disciplines, self.selected_task), insertTask)
 
     def __init__(self, user_vault: Vault):
         super().__init__()
         self.vault = user_vault
         self.taskManager = self.vault.taskManager
-        self.current_list_group = TaskManager.Filter.FilterTypes.EXPIRED
-        self.current_list_group_name = self.current_list_group.value
+        self.current_filter = TaskManager.Filter.FilterTypes.EXPIRED
+        self.current_list_group_name = self.current_filter.value
 
     def start(self):
         self.run()

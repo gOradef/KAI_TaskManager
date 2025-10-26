@@ -19,6 +19,7 @@ class ModalScreenOfEditingTask(ModalScreen[Task]):
         self.task_id = task_to_edit.id
         self.task_name = task_to_edit.name
         self.task_discipline = task_to_edit.discipline
+        self.task_isArchived = task_to_edit.isArchived
         self.task_description = task_to_edit.description
         self.task_deadline = task_to_edit.deadline
         self.task_priority = task_to_edit.priority
@@ -73,6 +74,7 @@ class ModalScreenOfEditingTask(ModalScreen[Task]):
                     id=self.task_id,
                     name=self.task_name,
                     discipline=self.task_discipline,
+                    isArchived=self.task_isArchived,
                     description=self.task_description,
                     deadline=self.task_deadline,
                     priority=self.task_priority
