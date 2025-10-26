@@ -2,7 +2,7 @@
   "meta": {
     "name": "KAI",
     "version": "0.1",
-    "last_updated": "2025-10-26T16:05:38.297475"
+    "last_updated": "2025-10-26T22:43:14.669433"
   },
   "data": {
     "disciplines": [
@@ -52,17 +52,17 @@
       },
       {
         "id": "31becdce-a9ba-458c-9d38-a12718022a13",
-        "discipline": "",
+        "discipline": "\u0418\u043d\u0444\u043e\u0440\u043c\u0430\u0442\u0438\u043a\u0430 \u0438 \u0432\u044b\u0447\u0438\u0441\u043b\u0438\u0442\u0435\u043b\u044c\u043d\u0430\u044f \u0442\u0435\u0445\u043d\u0438\u043a\u0430",
         "name": "TODAY",
         "description": "",
         "isArchived": false,
-        "status": "IN_PROGRESS",
+        "status": "TODO",
         "priority": "",
         "deadline": "26.10.25"
       },
       {
         "id": "0632663c-28a2-405a-bafa-00b24fd3d995",
-        "discipline": "",
+        "discipline": "\u0418\u043d\u0444\u043e\u0440\u043c\u0430\u0442\u0438\u043a\u0430 \u0438 \u0432\u044b\u0447\u0438\u0441\u043b\u0438\u0442\u0435\u043b\u044c\u043d\u0430\u044f \u0442\u0435\u0445\u043d\u0438\u043a\u0430",
         "name": "WEEK",
         "description": "",
         "isArchived": false,
