@@ -2,7 +2,7 @@
   "meta": {
     "name": "KAI",
     "version": "0.1",
-    "last_updated": "2025-10-19T10:39:43.931578"
+    "last_updated": "2025-10-26T16:05:38.297475"
   },
   "data": {
     "disciplines": [
@@ -15,9 +15,70 @@
         "discipline": "",
         "name": "1",
         "description": "",
-        "status": "TODO",
+        "isArchived": true,
+        "status": "IN_PROGRESS",
         "priority": 1,
         "deadline": "11.11.11"
+      },
+      {
+        "id": "2d1b025a-44d3-46af-8ce7-03f3a0331a6e",
+        "discipline": "",
+        "name": "no deadline",
+        "description": "",
+        "isArchived": false,
+        "status": "TODO",
+        "priority": "",
+        "deadline": ""
+      },
+      {
+        "id": "2de2ee56-212f-442c-9769-b7d123a59e14",
+        "discipline": "",
+        "name": "EXPIRED10DAYS",
+        "description": "",
+        "isArchived": false,
+        "status": "TODO",
+        "priority": "",
+        "deadline": "14.10.25"
+      },
+      {
+        "id": "1db83168-3b3f-4081-ac97-0470668245c1",
+        "discipline": "",
+        "name": "EXPIRED20DAYS",
+        "description": "",
+        "isArchived": false,
+        "status": "TODO",
+        "priority": "",
+        "deadline": "04.10.25"
+      },
+      {
+        "id": "31becdce-a9ba-458c-9d38-a12718022a13",
+        "discipline": "",
+        "name": "TODAY",
+        "description": "",
+        "isArchived": false,
+        "status": "IN_PROGRESS",
+        "priority": "",
+        "deadline": "26.10.25"
+      },
+      {
+        "id": "0632663c-28a2-405a-bafa-00b24fd3d995",
+        "discipline": "",
+        "name": "WEEK",
+        "description": "",
+        "isArchived": false,
+        "status": "TODO",
+        "priority": "",
+        "deadline": "30.10.25"
+      },
+      {
+        "id": "f8260f05-7e38-4fad-9110-7cd3a399e1c2",
+        "discipline": "",
+        "name": "WEEK+",
+        "description": "",
+        "isArchived": false,
+        "status": "TODO",
+        "priority": "",
+        "deadline": "10.11.25"
       }
     ]
   }

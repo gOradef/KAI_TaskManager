@@ -1,4 +1,5 @@
 ﻿import datetime
+from datetime import date
 import uuid
 from enum import Enum
 
@@ -11,14 +12,21 @@ class Task:
 
 
     id: str
-    discipline: str
     name: str
-    status: Status
+    discipline: str
+    status: Status # Uses Status Enum
+    isArchived: bool
     description: str
     priority: int # 1 - is higher, 4 - is lowest prio
     deadline: str
 
-    def __init__(self, name, discipline, description = None, status = None, priority = None, deadline = None, id = None):
+    def __init__(self, name, discipline, 
+                isArchived = False,
+                 description = None,
+                  status = None, 
+                  priority = None, 
+                  deadline = None, 
+                  id = None):
         if id is not None:
             self.id = id
         else:
@@ -33,38 +41,95 @@ class Task:
         self.description = description
         self.priority = priority
         self.deadline = deadline
+        self.isArchived = isArchived
 
 class TaskManager:
     disciplines: list[str]
-    tasks : list[Task]
-    
-    def tasks_filter_expired(self):
-        def isValid(task: Task):
-            return datetime.datetime.strptime(task["deadline"], "%Y-%m-%d") < datetime.datetime.today()
-        
-        filtered_tasks = list(filter(isValid, self.tasks))
+    tasks: list[Task]
+    current_tasks: list[Task]
+    class Filter:
+        class FilterTypes(Enum): #provides tuple(index, display_name)
+            ARCHIVED =  (-1, "Архив")
+            EXPIRED =   (0, "Просрочено")
+            TODAY =     (1, "Сегодня")
+            WEEK =      (2, "В течение недели")
+            ALL =       (3, "Все")
 
-        return filtered_tasks
-        
-    def tasks_filter_week(self):
-        def isValid():
-            pass
-        pass
-    def tasks_filter_weekPlus(self):
-        def isValid():
-            pass
-        pass
+        parent_ref: super = None #ref to taskManager object
+
+        @classmethod
+        def get_next_filter(cls, current_filter):
+            filters = list(cls.FilterTypes)
+            current_index = filters.index(current_filter)
+            next_index = (current_index + 1) % len(filters)
+            return filters[next_index]
+
+        def get_tasks_with_filter(self, filterType: FilterTypes) -> list[Task]:
+            """!Changes state of *current_tasks* by provided filter"""
+            def getDayOfTask(task: Task) -> date:
+                if task.deadline == "":
+                    return date.max
+                return datetime.datetime.strptime(task.deadline, "%d.%m.%y").date()
+            
+            today = date.today()
+            
+            match filterType:
+                case self.FilterTypes.ARCHIVED:
+                    def filter_task(task: Task):
+                        return task.isArchived
+                case self.FilterTypes.EXPIRED:
+                    def filter_task(task: Task):
+                        return task.deadline != "" and getDayOfTask(task) < today and not task.isArchived
+                case self.FilterTypes.TODAY:
+                    def filter_task(task: Task):
+                        return task.deadline != "" and getDayOfTask(task) == today and not task.isArchived
+                case self.FilterTypes.WEEK:
+                    next_week = today + datetime.timedelta(days=7)
+                    def filter_task(task: Task):
+                        task_date = getDayOfTask(task)
+                        return (task.deadline != "" and 
+                            today <= task_date <= next_week and not task.isArchived)
+                case self.FilterTypes.ALL:
+                    def filter_task(task: Task):
+                        return not task.isArchived
+            
+            self._set_current_tasks(list(filter(filter_task, self._get_tasks_list())))
+            return self._get_current_tasks()
+
+        def get_tasks_with_category(self, category: Task.Status):
+            pass #TODO
+
+        def __init__(self, Parent):
+            self.parent_ref = Parent
+
+        def _get_tasks_list(self) -> list[Task]:
+            return self.parent_ref.tasks
+
+        def _get_current_tasks(self) -> list[Task]:
+            return self.parent_ref.current_tasks
+        def _set_current_tasks(self, tasks: list[Task]) -> None:
+            self.parent_ref.current_tasks = tasks
 
     def __init__(self, data):
-        self.disciplines: list[str] = data["disciplines"]
+        def setStatusAsEnum(task):
+            match task["status"]:
+                case "TODO":
+                    return Task.Status.TODO
+                case "IN_PROGRESS":
+                    return Task.Status.IN_PROGRESS
+                case "COMPLETED":
+                    return Task.Status.COMPLETED
 
+        self.disciplines: list[str] = data["disciplines"]
+        self.filters = self.Filter(self)
         self.tasks = list()
         for task in data["tasks"]:
             self.tasks.append(Task(id=task["id"],
                                    name= task["name"],
                                    discipline=task["discipline"],
+                                   isArchived=task["isArchived"],
                                    description=task["description"],
-                                   status=task["status"],
+                                   status=setStatusAsEnum(task),
                                    priority=task["priority"],
                                    deadline=task["deadline"]))
             
@@ -74,26 +139,21 @@ class TaskManager:
         self.disciplines.append(newDiscipline)
 
     def deleteDiscipline(self, discipline):
-        # filtered_d = [obj for obj in self.disciplines if obj["id"] == disciplineId]
         self.disciplines.remove(discipline)
 
     # Category: tasks
     def createNewTask(self, task: Task):
         self.tasks.append(task)
-
-    def setDescriptionToTask(self, task_id, task_description):
-        self.tasks[task_id].description = task_description
-    def markAsInProgressTask(self, task_id):
-        self.tasks[task_id].status = Task.Status.IN_PROGRESS
-    def markAsCompletedTask(self, task_id):
-        """Mark a task as completed by its ID"""
+        
+    def markAsTask(self, task_id, task_status: Task.Status):
         for task in self.tasks:
-            # Handle both Task objects and dictionaries
-            task_id_to_check = task.id if hasattr(task, 'id') else task.get('id')
-            if task_id_to_check == task_id:
-                if hasattr(task, 'status'):
-                    task.status = task.Status.COMPLETED  # or Task.Status.COMPLETED depending on your import
-                break
-        else:
-            # Task not found
-            print(f"Task with ID {task_id} not found")
+            if task.id == task_id:
+                task.status = task_status 
+    def moveToArchiveTask(self, task_id):
+        for task in self.tasks:
+            if task.id == task_id:
+                task.isArchived = True 
+    def removeFromArchiveTask(self, task_id):
+        for task in self.tasks:
+            if task.id == task_id:
+                task.isArchived = False 

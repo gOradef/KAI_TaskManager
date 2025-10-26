@@ -72,6 +72,7 @@ class Vault:
                 'discipline': task.discipline,
                 'name': task.name,
                 'description': task.description,
+                'isArchived': task.isArchived,
                 'status': parseStatus(task),
                 'priority': task.priority,
                 'deadline': task.deadline

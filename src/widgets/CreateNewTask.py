@@ -19,7 +19,7 @@ class ModalScreenOfCreatingTask(ModalScreen[Task]):
         self.task_discipline = ""
         self.task_description = ""
         self.task_deadline = ""
-        self.task_priority = None
+        self.task_priority = ""
 
     def compose(self) -> ComposeResult:    
         yield Grid(
@@ -27,10 +27,9 @@ class ModalScreenOfCreatingTask(ModalScreen[Task]):
             Select.from_values(self.disciplines, prompt="Выберите дисциплину", id="task_discipline"),
             Select.from_values([1, 2, 3, 4], prompt="Выберите приоритет", id="task_priority"),
             Input(self.task_description, placeholder="Введите описание (опционально)", id="task_description"),
-            MaskedInput("99.99.9999", placeholder="DD.MM.YY", value=self.task_deadline),
+            MaskedInput("99.99.99", placeholder="DD.MM.YY", value=self.task_deadline, id="task_date"),
             Button("Сохранить", variant="primary", id="Save"),
-            Button("Cancel", variant="error", id="cancel"),
-            id="dialog"
+            Button("Cancel", variant="error", id="cancel"), id="dialog"
         )
 
     @on(Select.Changed, "#task_discipline")
@@ -48,7 +47,7 @@ class ModalScreenOfCreatingTask(ModalScreen[Task]):
         elif event.input.id == "task_description":
             self.task_description = event.value
 
-    @on(MaskedInput.Changed)
+    @on(MaskedInput.Changed, "#task_date")
     def date_changed(self, event: MaskedInput.Changed) -> None:
         self.task_deadline = event.value
 
