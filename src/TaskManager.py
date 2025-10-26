@@ -65,7 +65,6 @@ class TaskManager:
             return filters[next_index]
 
         def get_tasks_with_filter(self, filterType: FilterTypes) -> list[Task]:
-            """!Changes state of *current_tasks* by provided filter"""
             def getDayOfTask(task: Task) -> date:
                 if task.deadline == "":
                     return date.max
@@ -93,8 +92,7 @@ class TaskManager:
                     def filter_task(task: Task):
                         return not task.isArchived
             
-            self._set_current_tasks(list(filter(filter_task, self._get_tasks_list())))
-            return self._get_current_tasks()
+            return list(filter(filter_task, self._get_tasks_list()))
 
         def get_tasks_with_category(self, category: Task.Status):
             pass #TODO

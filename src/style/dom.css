@@ -44,3 +44,12 @@ Label {
     border: solid $primary;
     margin: 1 0;
 }
+.danger {
+    background: red 30%
+}
+.warning {
+    background: yellow 30%
+}
+.task_archived {
+    text-style: strike;
+}
