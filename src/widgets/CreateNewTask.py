@@ -3,7 +3,6 @@ from textual.app import ComposeResult
 from textual.containers import Grid
 from textual.screen import ModalScreen
 from textual.widgets import Button, Input, MaskedInput, Select
-import datetime
 from TaskManager import Task
 
 class ModalScreenOfCreatingTask(ModalScreen[Task]):
@@ -42,7 +41,7 @@ class ModalScreenOfCreatingTask(ModalScreen[Task]):
 
     @on(Input.Changed)
     def input_changed(self, event: Input.Changed) -> None:
-        if event.input.id == "task_name":  # You'll need to add id to your Input widgets
+        if event.input.id == "task_name":
             self.task_name = event.value
         elif event.input.id == "task_description":
             self.task_description = event.value
@@ -59,7 +58,6 @@ class ModalScreenOfCreatingTask(ModalScreen[Task]):
             if (not is_name_valid()):
                 self.notify('Имя задачи является обязательным')
             else:
-            # Create and return the Task
                 self.dismiss(Task(
                     name=self.task_name,
                     discipline=self.task_discipline,

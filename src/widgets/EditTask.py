@@ -69,16 +69,11 @@ class ModalScreenOfEditingTask(ModalScreen[Task]):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         def is_name_valid():
             return self.task_name != ""
-        
-        def getTaskDiscipline():
-            if self.task_discipline == "":
-                return ""
 
         if event.button.id == "Save":
             if not is_name_valid():
                 self.notify('Имя задачи является обязательным')
             else:
-            # Create and return the Task
                 self.dismiss(Task(
                     id=self.task_id,
                     name=self.task_name,

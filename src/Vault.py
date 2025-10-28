@@ -30,7 +30,7 @@ class Vault:
         )
         self.taskManager = TaskManager(self.VAULT_J["data"])
 
-    #depr
+    #!deprecated()
     def createNewVault(self):
         default_data = {
             "meta": {
@@ -56,10 +56,8 @@ class Vault:
             json.dump(default_data, f, indent=2)
 
     def save(self):
-        # Update metadata
         self.meta.last_updated = datetime.now().isoformat()
 
-        # Convert tasks to serializable format
         serializable_tasks = []
         def parseStatus(task):
             if isinstance(task.status, Task.Status):
@@ -79,7 +77,6 @@ class Vault:
             }
             serializable_tasks.append(task_dict)
 
-        # Prepare data for saving
         save_data = {
             "meta": {
                 "name": self.meta.name,
