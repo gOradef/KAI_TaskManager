@@ -27,7 +27,7 @@ class TextualApp(TUI):
         ("a", "archive_task()", "[de]archive task"),
         ("m", "mark_as()", "Mark as ..."),
         ("f", "filter_by_discipline()", "filter by discipline"),
-        # ("shift+f", "previous_tab()", "filter by .."),
+        ("d", "filter_by_discipline_otherwise()", "filter by discipline"),
         ("e", "edit_disciplines()", "Edit list of disciplines"),
         ("h", "home_page()", "Open home page")
         # ("Esc", "exit_app()", "Exit") #TODO Remove from prod
@@ -35,8 +35,23 @@ class TextualApp(TUI):
 
     selected_task: Task
     current_filter: TaskManager.Filter.FilterTypes
+    current_discipline: str | None
 
     def renderTasks(self):
+        def get_tasks_with_filter_by_discipline(tasks: list[Task], filter_discipline):
+            def filter_by_discipline(task: Task, filter_discipline = filter_discipline):
+                if (filter_discipline == None):
+                    return True
+                if (task.discipline == filter_discipline):
+                    return True
+                return False
+
+            if filter_discipline is None:
+                return tasks
+            filtered_by_discipline = list(filter(filter_by_discipline, tasks))
+            return filtered_by_discipline
+
+        
         def get_sorted_task_list(tasks: list[Task]) -> list[Task]:
             """Updated listview with provided tasks"""            
             def sort_key(task: Task):
@@ -54,15 +69,14 @@ class TextualApp(TUI):
                     deadline_date = datetime.max.date()
                 
                 return (
-                    status_order[task.status],  # Primary: status
-                    task.priority if task.priority != "" else 5, # Secondary: priority (1=highest)
-                    deadline_date               # Tertiary: deadline (earliest first)
+                    status_order[task.status],
+                    task.priority if task.priority != "" else 5,
+                    deadline_date
                 )
                 
             return sorted(tasks, key=sort_key)
         
         def get_task_class(task: Task):
-            """Determine CSS class based on days until deadline"""
             if not task.deadline or not task.deadline.strip():
                 return "chill"  # No deadline set
             
@@ -85,7 +99,7 @@ class TextualApp(TUI):
                     return "chill"  # More than 14 days left
                     
             except (ValueError, AttributeError):
-                return "chill"  # Invalid date format
+                return "chill"
 
         def get_days_text(task):
             """Get formatted text showing days until deadline"""
@@ -128,12 +142,12 @@ class TextualApp(TUI):
                 if task.isArchived:
                     display_text = f"🗑️  {task_name}"
                     
-                # Include both deadline date and days left text
                 list_view.append(ListItem(Label(display_text + f" | {task.deadline}", classes=class_text),
                                           Label(f'({days_text}) [i]{str("\n" + task.discipline) if task.discipline != "" else ""}[/i]', classes=class_text)))
 
         tasks_filtered = self.taskManager.filters.get_tasks_with_filter(self.current_filter)
-        tasks_sorted = get_sorted_task_list(tasks_filtered)
+        tasks_filtered_by_discipline = get_tasks_with_filter_by_discipline(tasks_filtered, self.current_discipline)
+        tasks_sorted = get_sorted_task_list(tasks_filtered_by_discipline)
         self.taskManager.filters._set_current_tasks(tasks_sorted)
         display_task_list(self, tasks_sorted)
 
@@ -153,12 +167,10 @@ class TextualApp(TUI):
         self.exit()
 
     def action_archive_task(self):
-        list_view = self.query_one("#list_view_all", ListView)  # Replace with your ListView ID
+        list_view = self.query_one("#list_view_all", ListView)
         if list_view.has_focus:
-            # ListView is focused
             selected_index = list_view.index
             if selected_index is not None:
-                # Mark the selected task as completed
                 task = self.taskManager.current_tasks[selected_index]
                 msg = f"Задача '{task.name}' "
                 if task.isArchived:
@@ -172,14 +184,37 @@ class TextualApp(TUI):
         else:
             self.notify("Сначала выберите задачу из списка")
     def action_filter_by_discipline(self):
-        return NotImplemented #TODO
+        self._cycle_discipline_filter(reverse=False)
+
+    def action_filter_by_discipline_otherwise(self):
+        self._cycle_discipline_filter(reverse=True)
+
+    def _cycle_discipline_filter(self, reverse):
+        disciplines = self.taskManager.disciplines
+        
+        if not disciplines:
+            self.current_discipline = None
+        elif self.current_discipline is None:
+            self.current_discipline = disciplines[-1] if reverse else disciplines[0]
+        else:
+            try:
+                current_index = disciplines.index(self.current_discipline)
+                if reverse:
+                    self.current_discipline = disciplines[current_index - 1] if current_index > 0 else None
+                else:
+                    self.current_discipline = disciplines[current_index + 1] if current_index < len(disciplines) - 1 else None
+            except ValueError:
+                self.current_discipline = disciplines[-1] if reverse else disciplines[0]
+        
+        self.renderTasks()
+        label = self.query_one("#filter_discipline_label")
+        label.update(f"Текущий фильтр: {self.current_discipline if self.current_discipline is not None else "нет"}")
+
     def action_mark_as(self):
-        list_view = self.query_one("#list_view_all", ListView)  # Replace with your ListView ID
+        list_view = self.query_one("#list_view_all", ListView)
         if list_view.has_focus:
-            # ListView is focused
             selected_index = list_view.index
             if selected_index is not None:
-                # Mark the selected task as completed
                 task = self.taskManager.current_tasks[selected_index]
                 msg = f"Задаче '{task.name}' установлен статус: "
                 match task.status:
@@ -208,7 +243,6 @@ class TextualApp(TUI):
         )
 
     def compose(self) -> ComposeResult:
-        # Yield other main widgets
         yield Header()
         yield Footer()
         yield Tabs(
@@ -216,9 +250,9 @@ class TextualApp(TUI):
             Tab("Просрочено", id="expired"),
             Tab("Сегодня", id="today"),
             Tab("На неделе", id="week"),
-            Tab("Все", id="all")
+            Tab("Все", id="all"), active="expired"
         )
-
+        yield Label(f"Текущий фильтр: нет", id="filter_discipline_label", shrink=True)
         list_items = []
         list_view_all = ListView(*list_items, id="list_view_all")
         yield list_view_all
@@ -266,7 +300,7 @@ class TextualApp(TUI):
         self.vault = user_vault
         self.taskManager = self.vault.taskManager
         self.current_filter = TaskManager.Filter.FilterTypes.EXPIRED
-        self.current_list_group_name = self.current_filter.value
+        self.current_discipline = None
 
     def start(self):
         self.run()

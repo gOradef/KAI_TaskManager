@@ -69,7 +69,6 @@ class TaskManager:
                 if task.deadline == "":
                     return date.max
                 return datetime.datetime.strptime(task.deadline, "%d.%m.%y").date()
-            
             today = date.today()
             
             match filterType:
@@ -92,11 +91,8 @@ class TaskManager:
                     def filter_task(task: Task):
                         return not task.isArchived
             
-            return list(filter(filter_task, self._get_tasks_list()))
-
-        def get_tasks_with_category(self, category: Task.Status):
-            pass #TODO
-
+            filtered_by_period = list(filter(filter_task, self._get_tasks_list()))
+            return filtered_by_period
         def __init__(self, Parent):
             self.parent_ref = Parent
 
